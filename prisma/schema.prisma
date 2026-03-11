@@ -1,0 +1,82 @@
+// Matchboxd - Futbol Müsabakaları Değerlendirme Sistemi
+// SQLite + Prisma
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?  // bcrypt; giriş için gerekli
+  avatarUrl    String?
+  favoriteTeam String?  // Tuttuğu takım (opsiyonel)
+  role         String   @default("user") // user | editor | admin
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  reviews      Review[]
+  collections  Collection[]
+}
+
+model Match {
+  id            String   @id @default(cuid())
+  externalId    String?  @unique // football-data.org match id
+  homeTeamName  String
+  awayTeamName  String
+  homeCrest     String?  // logo URL
+  awayCrest     String?
+  homeScore     Int
+  awayScore     Int
+  competition   String
+  competitionType String // league | cup | international | friendly
+  season        String
+  matchDate     DateTime
+  venue         String
+  status        String?  // SCHEDULED | FINISHED | etc.
+  // Teknik istatistikler JSON (SQLite)
+  statsJson     String?  // JSON string of MatchStats
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  reviews       Review[]
+}
+
+model Review {
+  id             String   @id @default(cuid())
+  matchId        String
+  match          Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName       String   // Formdan veya auth'dan
+  title          String?
+  content        String   // Teknik yorum
+  rating         Int      // 1-10
+  manOfTheMatch  String?  // Maçın Adamı
+  categoryRatingsJson String? // JSON: tempo, tacticalLevel, excitement, referee
+  likeCount      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([matchId])
+  @@index([createdAt])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  matchIdsJson String  // JSON array of match ids
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
