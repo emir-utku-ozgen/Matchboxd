@@ -12,20 +12,19 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
-function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("tr-TR", {
-    weekday: "long",
+/** "1 Mayıs 2026 · 21:45" — tek satır, gün adı yok */
+function formatMatchDateTime(date: Date) {
+  const d = new Date(date);
+  const datePart = d.toLocaleDateString("tr-TR", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-}
-
-function formatTime(date: Date) {
-  return new Date(date).toLocaleTimeString("tr-TR", {
+  const timePart = d.toLocaleTimeString("tr-TR", {
     hour: "2-digit",
     minute: "2-digit",
   });
+  return `${datePart} · ${timePart}`;
 }
 
 // ─── Yardımcı: Puan rengi ────────────────────────────────────────────────────
@@ -121,9 +120,12 @@ export default async function MatchDetailPage({ params }: Props) {
             <span className="rounded-full bg-[var(--stadium-green-muted)] px-3 py-1 text-xs font-medium text-[var(--stadium-green)]">
               {match.competition}
             </span>
-            <span className="text-xs text-[var(--muted)]">
-              {formatDate(match.matchDate)} · {formatTime(match.matchDate)}
-            </span>
+            <time
+              dateTime={new Date(match.matchDate).toISOString()}
+              className="text-xs text-[var(--muted)]"
+            >
+              {formatMatchDateTime(match.matchDate)}
+            </time>
           </div>
 
           <div className="flex items-center gap-4">
@@ -171,7 +173,6 @@ export default async function MatchDetailPage({ params }: Props) {
           {/* Meta bilgiler */}
           <div className="mt-5 flex flex-wrap items-center justify-center gap-4 border-t border-[var(--border)] pt-5 text-sm text-[var(--muted)]">
             <span>📍 {match.venue}</span>
-            <span>🏆 {match.season}</span>
             {match.reviews.length > 0 && (
               <>
                 <span>

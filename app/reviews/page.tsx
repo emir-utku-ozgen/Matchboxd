@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import TeamFilter from "./TeamFilter";
-import ReviewFormToggle from "./ReviewFormToggle";
 import { MessageSquare } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -80,13 +79,8 @@ export default async function ReviewsPage({ searchParams }: Props) {
         </div>
 
         {/* ── Filtre ────────────────────────────────────────────────────── */}
-        <div className="mb-6">
+        <div className="mb-8">
           <TeamFilter teams={teams} selectedTeam={team} />
-        </div>
-
-        {/* ── Yeni Analiz Yaz — Accordion ───────────────────────────────── */}
-        <div className="mb-10">
-          <ReviewFormToggle />
         </div>
 
         {/* ── Analiz Akışı ──────────────────────────────────────────────── */}
@@ -106,18 +100,13 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
           {/* ── Boş Durum ─────────────────────────────────────────────── */}
           {reviews.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-[var(--stadium-green)]/20 bg-[var(--stadium-green-muted)]/30 py-16 text-center">
-              <span className="text-5xl">⚽</span>
-              <div>
-                <p className="text-base font-semibold text-[var(--foreground)]">
-                  {team
-                    ? `Bu takım için henüz analiz yazılmamış.`
-                    : "Henüz hiç analiz paylaşılmamış."}
-                </p>
-                <p className="mt-1 text-sm text-[var(--stadium-green)]">
-                  İlk sen yaz ve tartışmayı başlat! ⚽
-                </p>
-              </div>
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[var(--border)] py-20 text-center">
+              <span className="text-4xl opacity-40">⚽</span>
+              <p className="text-sm text-[var(--muted)]">
+                {team
+                  ? `${team} için henüz bir analiz paylaşılmamış.`
+                  : "Henüz hiç analiz paylaşılmamış."}
+              </p>
             </div>
           )}
 

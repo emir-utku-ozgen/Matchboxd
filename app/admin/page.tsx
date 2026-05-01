@@ -9,11 +9,9 @@ import {
   Database,
   ShieldCheck,
   Activity,
-  RefreshCw,
 } from "lucide-react";
 import UserTable, { type UserRow } from "./_components/UserTable";
 import ReviewTable, { type ReviewRow } from "./_components/ReviewTable";
-import SyncButton from "./_components/SyncButton";
 
 export const dynamic = "force-dynamic";
 
@@ -249,57 +247,7 @@ export default async function AdminPage() {
           </section>
         )}
 
-        {/* ── 5. Veritabanı Senkronizasyonu ───────────────────────────────── */}
-        <section className="mb-10">
-          <SectionHeader
-            icon={<RefreshCw className="h-4 w-4" />}
-            title="Veritabanı Senkronizasyonu"
-            subtitle="Football Data API"
-          />
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6">
-            <p className="mb-5 text-sm text-[var(--muted)]">
-              <strong className="text-[var(--foreground)]">football-data.org</strong> API'si üzerinden
-              son 7 gün ile önümüzdeki 7 günün maçlarını otomatik olarak çekip veritabanına ekler / günceller.
-              Mevcut kayıtlar <code className="rounded bg-[var(--background)] px-1.5 py-0.5 text-xs text-[var(--foreground)]">externalId</code> üzerinden{" "}
-              <strong className="text-[var(--foreground)]">upsert</strong> ile mükerrer olmadan güncellenir.
-            </p>
-
-            {/* Senkronizasyon butonu (Client Component) */}
-            <SyncButton />
-
-            {/* Manuel yöntem ayırıcı */}
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-[var(--border)]" />
-              <span className="text-xs text-[var(--muted)]">veya manuel yöntem</span>
-              <div className="h-px flex-1 bg-[var(--border)]" />
-            </div>
-
-            {/* Seed rehberi */}
-            <p className="mb-4 text-sm text-[var(--muted)]">
-              Özel / elle oluşturulan maçlar için seed scripti kullanın:
-            </p>
-            <ol className="mb-5 list-inside list-decimal space-y-2 text-sm text-[var(--muted)]">
-              <li>
-                <code className="rounded bg-[var(--background)] px-1.5 py-0.5 text-xs text-[var(--foreground)]">
-                  prisma/real-matches.ts
-                </code>{" "}
-                dosyasını düzenle.
-              </li>
-              <li>
-                Terminalde{" "}
-                <code className="rounded bg-[var(--background)] px-1.5 py-0.5 text-xs text-[var(--foreground)]">
-                  npm run db:seed
-                </code>{" "}
-                çalıştır.
-              </li>
-            </ol>
-            <div className="rounded-lg bg-[var(--background)] px-4 py-3 font-mono text-xs text-[var(--stadium-green)]">
-              npm run db:seed
-            </div>
-          </div>
-        </section>
-
-        {/* ── 6. Hızlı Erişim ─────────────────────────────────────────────── */}
+        {/* ── 5. Hızlı Erişim ─────────────────────────────────────────────── */}
         <section>
           <SectionHeader title="Hızlı Erişim" />
           <div className="grid gap-3 sm:grid-cols-3">

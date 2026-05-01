@@ -153,13 +153,10 @@ function MatchCard({ m }: { m: Match }) {
         </div>
 
         {/* Skor */}
-        <div className="flex min-w-[80px] shrink-0 flex-col items-center justify-center gap-0.5 py-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold tabular-nums text-[var(--foreground)]">{m.homeScore}</span>
-            <span className="text-[var(--muted)]">–</span>
-            <span className="text-xl font-bold tabular-nums text-[var(--foreground)]">{m.awayScore}</span>
-          </div>
-          <span className="text-xs text-[var(--muted)]">{m.season}</span>
+        <div className="flex min-w-[80px] shrink-0 items-center justify-center gap-2 py-1">
+          <span className="text-xl font-bold tabular-nums text-[var(--foreground)]">{m.homeScore}</span>
+          <span className="text-[var(--muted)]">–</span>
+          <span className="text-xl font-bold tabular-nums text-[var(--foreground)]">{m.awayScore}</span>
         </div>
 
         {/* Deplasman */}
