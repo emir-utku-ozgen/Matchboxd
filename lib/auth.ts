@@ -32,22 +32,6 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        // ── 1b. .env'deki Editor kimlik bilgileriyle karşılaştır ───────────────
-        // DB sorgusu atılmaz; role: "editor" döner.
-        // .env dosyasına EDITOR_EMAIL ve EDITOR_PASSWORD ekleyin.
-        const editorEmail    = process.env.EDITOR_EMAIL?.trim().toLowerCase();
-        const editorPassword = process.env.EDITOR_PASSWORD;
-
-        if (editorEmail && editorPassword && email === editorEmail && password === editorPassword) {
-          return {
-            id:    "env-editor", // sabit ID — DB kaydı gerektirmez
-            name:  "Editor",
-            email: editorEmail,
-            image: undefined,
-            role:  "editor",
-          };
-        }
-
         // ── 2. Normal kullanıcı: veritabanında ara ────────────────────────────
         const user = await prisma.user.findUnique({
           where: { email },

@@ -1,10 +1,9 @@
 /**
- * Next.js Edge Middleware — Çok Katmanlı Rota Koruması
+ * Next.js Edge Middleware — Rota Koruması
  *
- * Rol hiyerarşisi:
- *   user   → yalnızca genel sayfalar
- *   editor → /editor/* + genel sayfalar
- *   admin  → her şey (/admin/*, /editor/*, genel sayfalar)
+ * Rol yapısı:
+ *   user  → genel sayfalar + /my-reviews
+ *   admin → her şey (+ /admin/*)
  *
  * Avantaj: Veritabanına dokunmadan JWT içindeki `role` alanıyla karar verir.
  * Kısıt  : Rol değişikliği ancak yeniden oturum açıldığında yansır.
@@ -32,22 +31,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // ── /editor/* — "editor" VEYA "admin" rolü ───────────────────────────────
-  if (pathname.startsWith("/editor")) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-
-    if (!token) {
-      const url = new URL("/login", request.url);
-      url.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(url);
-    }
-
-    const role = token.role as string | undefined;
-    if (role !== "admin" && role !== "editor") {
-      return NextResponse.redirect(new URL("/unauthorized", request.url));
-    }
-  }
-
   // ── /my-reviews/* — giriş yapmış her kullanıcı ────────────────────────────
   if (pathname.startsWith("/my-reviews")) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -65,7 +48,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/editor/:path*",
     "/my-reviews",
     "/my-reviews/:path*",
   ],

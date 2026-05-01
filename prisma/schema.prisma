@@ -17,7 +17,7 @@ model User {
   passwordHash String?
   avatarUrl    String?
   favoriteTeam String?
-  role         String   @default("user") // user | editor | admin
+  role         String   @default("user") // user | admin
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   reviews      Review[]

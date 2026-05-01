@@ -3,20 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { ShieldCheck, PenSquare } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 // ─── Tip tanımları ─────────────────────────────────────────────────────────────
-
-type Role = "user" | "editor" | "admin";
 
 type NavItem = {
   href: string;
   label: string;
   /** true ise yalnızca oturum açmış kullanıcılar görebilir */
   requiresAuth?: true;
-  /** Görmek için gereken minimum rol. Tanımsızsa herkese açık. */
-  minRole?: "editor" | "admin";
-  /** Lucide ikonu — yalnızca yetkili nav öğeleri için */
+  /** true ise yalnızca "admin" rolü görebilir */
+  adminOnly?: true;
+  /** Lucide ikonu */
   icon?: React.ComponentType<{ className?: string }>;
 };
 
@@ -29,20 +27,9 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/reviews",     label: "Analizler"     },
   { href: "/collections", label: "Koleksiyonlar" },
   { href: "/stats",       label: "İstatistikler" },
-  // Giriş yapmış kullanıcı → kendi analiz arşivi
-  { href: "/my-reviews", label: "Analizlerim", requiresAuth: true },
-  // "editor" ve üstü → İçerik yönetimi
-  { href: "/editor", label: "İçerik", icon: PenSquare, minRole: "editor" },
-  // yalnızca "admin" → Yönetim paneli
-  { href: "/admin",  label: "Admin",  icon: ShieldCheck, minRole: "admin"  },
+  { href: "/my-reviews",  label: "Analizlerim", requiresAuth: true },
+  { href: "/admin",       label: "Admin", icon: ShieldCheck, adminOnly: true },
 ];
-
-// ─── Rol rozeti ────────────────────────────────────────────────────────────────
-
-const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
-  admin:  { label: "admin",  cls: "bg-red-500/15 text-red-400"   },
-  editor: { label: "editor", cls: "bg-amber-500/15 text-amber-400" },
-};
 
 // ─── Bileşen ───────────────────────────────────────────────────────────────────
 
@@ -50,22 +37,14 @@ export default function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
-  const role: Role = (session?.user?.role as Role) ?? "user";
-  const isAdmin    = role === "admin";
-  const isEditor   = role === "editor";
-
+  const isAdmin    = session?.user?.role === "admin";
   const isLoggedIn = !!session?.user;
 
-  /** requiresAuth + minRole hiyerarşisine göre filtrele */
   const navItems = ALL_NAV_ITEMS.filter((item) => {
+    if (item.adminOnly   && !isAdmin)    return false;
     if (item.requiresAuth && !isLoggedIn) return false;
-    if (!item.minRole) return true;
-    if (item.minRole === "editor") return isEditor || isAdmin;
-    if (item.minRole === "admin")  return isAdmin;
     return true;
   });
-
-  const badge = ROLE_BADGE[role];
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--background)]/80">
@@ -84,10 +63,9 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <ul className="flex items-center gap-1 sm:gap-2">
             {navItems.map((item) => {
-              const isActive     = pathname === item.href || pathname.startsWith(item.href + "/");
-              const isAdminItem  = item.minRole === "admin";
-              const isEditorItem = item.minRole === "editor";
-              const Icon         = item.icon;
+              const isActive    = pathname === item.href || pathname.startsWith(item.href + "/");
+              const isAdminItem = item.adminOnly === true;
+              const Icon        = item.icon;
 
               return (
                 <li key={item.href}>
@@ -97,14 +75,10 @@ export default function Navbar() {
                       isActive
                         ? isAdminItem
                           ? "bg-red-500/15 text-red-400"
-                          : isEditorItem
-                            ? "bg-amber-500/15 text-amber-400"
-                            : "bg-stadium-muted text-[var(--stadium-green)]"
+                          : "bg-stadium-muted text-[var(--stadium-green)]"
                         : isAdminItem
                           ? "text-[var(--foreground)]/80 hover:bg-red-500/10 hover:text-red-400"
-                          : isEditorItem
-                            ? "text-[var(--foreground)]/80 hover:bg-amber-500/10 hover:text-amber-400"
-                            : "text-[var(--foreground)]/80 hover:bg-[var(--card-bg)] hover:text-[var(--stadium-green)]"
+                          : "text-[var(--foreground)]/80 hover:bg-[var(--card-bg)] hover:text-[var(--stadium-green)]"
                     }`}
                   >
                     {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
@@ -127,12 +101,10 @@ export default function Navbar() {
                 {session.user.name}
               </Link>
 
-              {/* Admin / Editor rozeti */}
-              {badge && (
-                <span
-                  className={`hidden rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide sm:inline ${badge.cls}`}
-                >
-                  {badge.label}
+              {/* Admin rozeti */}
+              {isAdmin && (
+                <span className="hidden rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400 sm:inline">
+                  admin
                 </span>
               )}
 
