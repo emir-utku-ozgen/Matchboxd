@@ -1,16 +1,25 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+// Node.js ortamında WebSocket desteği.
+// Edge/Vercel runtime'da global WebSocket zaten tanımlı, bu satır atlanır.
+if (typeof WebSocket === "undefined") {
+  neonConfig.webSocketConstructor = ws;
+}
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-function createPrisma() {
-  const url = process.env.DATABASE_URL || "file:./dev.db";
-  const authToken = process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN;
+function createPrisma(): PrismaClient {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL ortam değişkeni tanımlı değil.");
+  }
 
-  const adapter = new PrismaLibSql({
-    url,
-    authToken: authToken || undefined,
-  });
+  // PrismaNeon, PoolConfig alır — libsql veya başka sürücü devreye girmez.
+  const adapter = new PrismaNeon({ connectionString });
+
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],

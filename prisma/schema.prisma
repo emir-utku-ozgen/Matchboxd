@@ -1,13 +1,12 @@
 // Matchboxd - Futbol Müsabakaları Değerlendirme Sistemi
-// SQLite + Prisma
+// PostgreSQL (Neon)
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -34,13 +33,12 @@ model Match {
   homeScore       Int
   awayScore       Int
   competition     String
-  competitionType String   // league | cup | international | friendly
+  competitionType String
   season          String
   matchDate       DateTime
   venue           String
-  status          String?  // SCHEDULED | FINISHED | etc.
-  statsJson       String?  // JSON string of MatchStats (homeFormation, awayFormation, vb.)
-  // true = openfootball arşivinden geldi; false = seed / elle eklendi
+  status          String?
+  statsJson       String?
   isArchived      Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -61,15 +59,10 @@ model Review {
   userName            String
   title               String?
   content             String
-  // Genel puan (1-10, kullanıcının manuel girdiği)
   rating              Int
-  // Taktiksel diziliş: 4-3-3, 3-5-2, 4-2-3-1 vb.
   formation           String?
-  // Maçın adamı
   manOfTheMatch       String?
-  // Alt kategori puanları (JSON): tempo, tacticalLevel, excitement, referee, atmosphere — her biri 1-10
   categoryRatingsJson String?
-  // Ağırlıklı ortalama puan: alt puanlardan hesaplanır, null ise alt puan girilmemiş
   weightedRating      Float?
   likeCount           Int      @default(0)
   createdAt           DateTime @default(now())
@@ -81,7 +74,6 @@ model Review {
   @@index([weightedRating])
 }
 
-// Koleksiyon: WATCHED | WATCHLIST | FAVORITES | CUSTOM
 model Collection {
   id          String            @id @default(cuid())
   userId      String
@@ -89,7 +81,6 @@ model Collection {
   name        String
   description String?
   isPublic    Boolean           @default(true)
-  // WATCHED = "İzledim" | WATCHLIST = "Gideceğim" | FAVORITES = "Favorilerim" | CUSTOM = kullanıcı tanımlı
   type        String            @default("CUSTOM")
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -99,7 +90,6 @@ model Collection {
   @@index([type])
 }
 
-// Maç - Koleksiyon many-to-many join tablosu
 model CollectionMatch {
   id           String     @id @default(cuid())
   collectionId String
