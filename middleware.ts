@@ -48,10 +48,25 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ── /my-reviews/* — giriş yapmış her kullanıcı ────────────────────────────
+  if (pathname.startsWith("/my-reviews")) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token) {
+      const url = new URL("/login", request.url);
+      url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  // Her iki route grubunu da yakala; statik dosyalar ve API rotaları hariç
-  matcher: ["/admin/:path*", "/editor/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/editor/:path*",
+    "/my-reviews",
+    "/my-reviews/:path*",
+  ],
 };

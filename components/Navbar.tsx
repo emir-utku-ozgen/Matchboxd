@@ -12,6 +12,8 @@ type Role = "user" | "editor" | "admin";
 type NavItem = {
   href: string;
   label: string;
+  /** true ise yalnızca oturum açmış kullanıcılar görebilir */
+  requiresAuth?: true;
   /** Görmek için gereken minimum rol. Tanımsızsa herkese açık. */
   minRole?: "editor" | "admin";
   /** Lucide ikonu — yalnızca yetkili nav öğeleri için */
@@ -27,6 +29,8 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/reviews",     label: "Analizler"     },
   { href: "/collections", label: "Koleksiyonlar" },
   { href: "/stats",       label: "İstatistikler" },
+  // Giriş yapmış kullanıcı → kendi analiz arşivi
+  { href: "/my-reviews", label: "Analizlerim", requiresAuth: true },
   // "editor" ve üstü → İçerik yönetimi
   { href: "/editor", label: "İçerik", icon: PenSquare, minRole: "editor" },
   // yalnızca "admin" → Yönetim paneli
@@ -50,8 +54,11 @@ export default function Navbar() {
   const isAdmin    = role === "admin";
   const isEditor   = role === "editor";
 
-  /** minRole hiyerarşisine göre filtrele */
+  const isLoggedIn = !!session?.user;
+
+  /** requiresAuth + minRole hiyerarşisine göre filtrele */
   const navItems = ALL_NAV_ITEMS.filter((item) => {
+    if (item.requiresAuth && !isLoggedIn) return false;
     if (!item.minRole) return true;
     if (item.minRole === "editor") return isEditor || isAdmin;
     if (item.minRole === "admin")  return isAdmin;
