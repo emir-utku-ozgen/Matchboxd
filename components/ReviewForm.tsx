@@ -54,13 +54,15 @@ export default function ReviewForm({ initialMatchId }: Props) {
   const [success, setSuccess]           = useState(false);
 
   useEffect(() => {
+    // Maç detay sayfasından geldiyse (initialMatchId mevcut) listeye gerek yok
+    if (initialMatchId) return;
+
     fetch("/api/matches")
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
         setMatches(list);
-        // initialMatchId varsa onu koru; yoksa ilk maçı seç
-        if (list.length > 0 && !initialMatchId) setMatchId(list[0].id);
+        if (list.length > 0) setMatchId(list[0].id);
       })
       .catch(() => setMatches([]));
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,24 +163,26 @@ export default function ReviewForm({ initialMatchId }: Props) {
       )}
 
       <div className="space-y-5">
-        {/* Maç seçimi */}
-        <div>
-          <label htmlFor="match" className="mb-1.5 block text-sm font-medium text-[var(--foreground)]">
-            Maç
-          </label>
-          <select
-            id="match"
-            value={matchId}
-            onChange={(e) => setMatchId(e.target.value)}
-            required
-            className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-[var(--foreground)] focus:border-[var(--stadium-green)] focus:outline-none focus:ring-1 focus:ring-[var(--stadium-green)]"
-          >
-            <option value="">Maç seçin</option>
-            {matches.map((m) => (
-              <option key={m.id} value={m.id}>{formatMatch(m)}</option>
-            ))}
-          </select>
-        </div>
+        {/* Maç seçimi — yalnızca standalone formda göster (maç detay sayfasında gizli) */}
+        {!initialMatchId && (
+          <div>
+            <label htmlFor="match" className="mb-1.5 block text-sm font-medium text-[var(--foreground)]">
+              Maç
+            </label>
+            <select
+              id="match"
+              value={matchId}
+              onChange={(e) => setMatchId(e.target.value)}
+              required
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-[var(--foreground)] focus:border-[var(--stadium-green)] focus:outline-none focus:ring-1 focus:ring-[var(--stadium-green)]"
+            >
+              <option value="">Maç seçin</option>
+              {matches.map((m) => (
+                <option key={m.id} value={m.id}>{formatMatch(m)}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Taktiksel diziliş */}
         <div className="grid grid-cols-2 gap-4">
