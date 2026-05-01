@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  TooltipProps,
+  type TooltipContentProps, // v3: custom content bileşenleri için doğru tip
 } from "recharts";
 import { TrendingUp } from "lucide-react";
 
@@ -23,8 +23,16 @@ export type ActivityDay = {
 };
 
 // ─── Özel Tooltip ────────────────────────────────────────────────────────────
+//
+// Recharts v3 değişiklikleri:
+// • TooltipProps artık active/payload/label içermiyor (bunlar context'ten besleniyor).
+// • Custom content için TooltipContentProps<TValue, TName> kullanılmalı.
+// • content={CustomTooltip} geçişinde Recharts, ContentType<ValueType, NameType>
+//   bekler; dolayısıyla fonksiyon en geniş default generic'lerle (varsayılan
+//   TooltipContentProps = TooltipContentProps<ValueType, NameType>) yazılmalı.
+//   Dar tip (number, string) contravariance hatası verir.
 
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload, label }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
 
   return (
@@ -40,27 +48,38 @@ function CustomTooltip({ active, payload, label }: TooltipProps<number, string>)
       <p style={{ color: "#737373", fontSize: 11, marginBottom: 8, fontWeight: 500 }}>
         {label}
       </p>
-      {payload.map((entry) => (
-        <div
-          key={entry.dataKey}
-          style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}
-        >
-          <span
-            style={{
-              display: "inline-block",
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              backgroundColor: entry.color,
-              flexShrink: 0,
-            }}
-          />
-          <span style={{ color: "#e5e5e5", fontSize: 13 }}>
-            {entry.dataKey === "reviews" ? "Analiz" : "Ort. Puan"}:{" "}
-            <strong style={{ color: entry.color }}>{entry.value}</strong>
-          </span>
-        </div>
-      ))}
+
+      {payload.map((entry, idx) => {
+        // dataKey: DataKey<any> = string | number | function → String() ile güvenli
+        const keyStr   = String(entry.dataKey ?? idx);
+        const dotColor = entry.color ?? "#737373";
+        // value: ValueType | undefined = number | string | number[] | string[] | undefined
+        const display  = Array.isArray(entry.value)
+          ? entry.value.join(", ")
+          : String(entry.value ?? "");
+
+        return (
+          <div
+            key={`${keyStr}-${idx}`}
+            style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                backgroundColor: dotColor,
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ color: "#e5e5e5", fontSize: 13 }}>
+              {keyStr === "reviews" ? "Analiz" : "Ort. Puan"}:{" "}
+              <strong style={{ color: dotColor }}>{display}</strong>
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -113,7 +132,7 @@ export default function ActivityChart({ data }: { data: ActivityDay[] }) {
             tickLine={false}
             allowDecimals={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#262626", strokeWidth: 1 }} />
+          <Tooltip content={CustomTooltip} cursor={{ stroke: "#262626", strokeWidth: 1 }} />
           <Legend
             wrapperStyle={{ paddingTop: 16 }}
             formatter={(value) => (
