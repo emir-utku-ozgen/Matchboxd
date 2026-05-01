@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Matchboxd - Futbol gece maçı atmosferi */
+:root {
+  --background: #0c0c0c;
+  --foreground: #e5e5e5;
+  --stadium-green: #22c55e;
+  --stadium-green-hover: #16a34a;
+  --stadium-green-muted: rgba(34, 197, 94, 0.15);
+  --card-bg: #141414;
+  --border: #262626;
+  --muted: #737373;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-stadium: var(--stadium-green);
+  --color-stadium-hover: var(--stadium-green-hover);
+  --color-card: var(--card-bg);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Stadyum yeşili vurgular */
+.text-stadium {
+  color: var(--stadium-green);
+}
+
+.bg-stadium {
+  background-color: var(--stadium-green);
+}
+
+.bg-stadium-muted {
+  background-color: var(--stadium-green-muted);
+}
+
+.border-stadium {
+  border-color: var(--stadium-green);
+}
+
+.hover\:bg-stadium:hover {
+  background-color: var(--stadium-green);
+}
+
+.hover\:text-stadium:hover {
+  color: var(--stadium-green);
+}

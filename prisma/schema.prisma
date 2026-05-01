@@ -1,0 +1,114 @@
+// Matchboxd - Futbol Müsabakaları Değerlendirme Sistemi
+// SQLite + Prisma
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  avatarUrl    String?
+  favoriteTeam String?
+  role         String   @default("user") // user | editor | admin
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  reviews      Review[]
+  collections  Collection[]
+}
+
+model Match {
+  id              String   @id @default(cuid())
+  externalId      String?  @unique
+  homeTeamName    String
+  awayTeamName    String
+  homeCrest       String?
+  awayCrest       String?
+  homeScore       Int
+  awayScore       Int
+  competition     String
+  competitionType String   // league | cup | international | friendly
+  season          String
+  matchDate       DateTime
+  venue           String
+  status          String?  // SCHEDULED | FINISHED | etc.
+  statsJson       String?  // JSON string of MatchStats (homeFormation, awayFormation, vb.)
+  // true = openfootball arşivinden geldi; false = seed / elle eklendi
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviews         Review[]
+  collectionItems CollectionMatch[]
+
+  @@index([competition])
+  @@index([isArchived])
+  @@index([season])
+}
+
+model Review {
+  id                  String   @id @default(cuid())
+  matchId             String
+  match               Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId              String?
+  user                User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName            String
+  title               String?
+  content             String
+  // Genel puan (1-10, kullanıcının manuel girdiği)
+  rating              Int
+  // Taktiksel diziliş: 4-3-3, 3-5-2, 4-2-3-1 vb.
+  formation           String?
+  // Maçın adamı
+  manOfTheMatch       String?
+  // Alt kategori puanları (JSON): tempo, tacticalLevel, excitement, referee, atmosphere — her biri 1-10
+  categoryRatingsJson String?
+  // Ağırlıklı ortalama puan: alt puanlardan hesaplanır, null ise alt puan girilmemiş
+  weightedRating      Float?
+  likeCount           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([matchId])
+  @@index([createdAt])
+  @@index([manOfTheMatch])
+  @@index([weightedRating])
+}
+
+// Koleksiyon: WATCHED | WATCHLIST | FAVORITES | CUSTOM
+model Collection {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  isPublic    Boolean           @default(true)
+  // WATCHED = "İzledim" | WATCHLIST = "Gideceğim" | FAVORITES = "Favorilerim" | CUSTOM = kullanıcı tanımlı
+  type        String            @default("CUSTOM")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  matches     CollectionMatch[]
+
+  @@index([userId])
+  @@index([type])
+}
+
+// Maç - Koleksiyon many-to-many join tablosu
+model CollectionMatch {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  matchId      String
+  match        Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  addedAt      DateTime   @default(now())
+
+  @@unique([collectionId, matchId])
+  @@index([collectionId])
+  @@index([matchId])
+}
