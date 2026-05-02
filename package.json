@@ -13,6 +13,7 @@
     "db:archive": "tsx prisma/archive.ts",
     "db:superlig": "tsx prisma/seed-superlig.ts",
     "db:migrate-neon": "tsx scripts/migrate-to-neon.ts",
+    "db:drop-null-cols": "tsx scripts/drop-all-null-columns.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

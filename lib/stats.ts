@@ -23,17 +23,26 @@ function daysAgo(n: number): Date {
 export async function getTopMatchesLastMonth(limit = 5): Promise<TopMatchStat[]> {
   const since = daysAgo(30);
 
-  const grouped = await prisma.review.groupBy({
-    by: ["matchId"],
-    where: { createdAt: { gte: since } },
-    _avg: { weightedRating: true, rating: true },
-    _count: { matchId: true },
-    orderBy: [
-      { _avg: { weightedRating: "desc" } },
-      { _avg: { rating: "desc" } },
-    ],
-    take: limit,
-  });
+  // PostgreSQL'de DESC ile NULL'lar varsayılan olarak üstte gelir; NULLS LAST ile düzeltiyoruz.
+  type AggRow = {
+    matchId: string;
+    avg_weighted: number | null;
+    avg_rating: number | null;
+    review_count: number;
+  };
+
+  const grouped = await prisma.$queryRaw<AggRow[]>`
+    SELECT
+      r."matchId",
+      AVG(r."weightedRating") AS avg_weighted,
+      AVG(r."rating") AS avg_rating,
+      COUNT(*)::int AS review_count
+    FROM "Review" r
+    WHERE r."createdAt" >= ${since}
+    GROUP BY r."matchId"
+    ORDER BY AVG(r."weightedRating") DESC NULLS LAST, AVG(r."rating") DESC NULLS LAST
+    LIMIT ${limit}
+  `;
 
   if (grouped.length === 0) return [];
 
@@ -57,6 +66,8 @@ export async function getTopMatchesLastMonth(limit = 5): Promise<TopMatchStat[]>
     .map((g) => {
       const m = matchMap.get(g.matchId);
       if (!m) return null;
+      const w = g.avg_weighted;
+      const ar = g.avg_rating;
       return {
         matchId: g.matchId,
         homeTeamName: m.homeTeamName,
@@ -65,11 +76,10 @@ export async function getTopMatchesLastMonth(limit = 5): Promise<TopMatchStat[]>
         matchDate: m.matchDate.toISOString(),
         homeScore: m.homeScore,
         awayScore: m.awayScore,
-        avgWeightedRating: g._avg.weightedRating
-          ? Math.round(g._avg.weightedRating * 10) / 10
-          : null,
-        avgRating: Math.round((g._avg.rating ?? 0) * 10) / 10,
-        reviewCount: g._count.matchId,
+        avgWeightedRating:
+          w != null ? Math.round(Number(w) * 10) / 10 : null,
+        avgRating: Math.round((ar != null ? Number(ar) : 0) * 10) / 10,
+        reviewCount: g.review_count,
       } satisfies TopMatchStat;
     })
     .filter((x): x is TopMatchStat => x !== null);
