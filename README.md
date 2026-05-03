@@ -20,7 +20,7 @@ Matchboxd, futbol maçlarını listeleyip teknik analiz paylaşımına odaklanan
 
 | Teknoloji | Rol | Bu projede kullanım gerekçesi |
 | --------- | --- | ------------------------------ |
-| **Next.js** (App Router) | Tam yığın React çatısı | Sayfa yönlendirme, sunucu bileşenleri, API Route Handler’lar ve tek kod tabanında dağıtım |
+| **Next.js** (App Router) | Tam yığın React çatısı | Sayfa yönlendirme, sunucu bileşenleri, API Route Handler'lar ve tek kod tabanında dağıtım |
 | **React** | UI | Bileşen tabanlı arayüz, etkileşimli formlar ve istemci durumu |
 | **Prisma** | ORM | Şema tek kaynak (`schema.prisma`), tip güvenli sorgular, veritabanı senkronizasyonu |
 | **PostgreSQL** | İlişkisel veritabanı | Maç, analiz, kullanıcı ve koleksiyon verilerinin normalize saklanması |
@@ -39,6 +39,24 @@ Proje geliştirme ortamı macOS (Unix-based) baz alınarak yapılandırılmışt
 - **Line Endings:** Git ayarlarınızın `core.autocrlf` değerinin `true` olduğundan emin olun (Windows'ta CRLF, Unix'te LF satır sonları sorun yaratabilir).
 
 - **Scriptler:** `package.json` içindeki scriptleri çalıştırmakta sorun yaşarsanız, projenin kök dizininde `node_modules/.bin` içerisindeki dosyaların Windows uyumlu (`.cmd` uzantılı) versiyonlarının çalıştığından emin olun.
+
+#### ⚠️ Önemli: Windows'ta `ulimit` Hatası
+
+`git reset --hard` sonrasında `npm run dev` komutunu çalıştırdığınızda **`ulimit` hatası** alabilirsiniz. Bu, `package.json` içindeki `dev` scriptinin Unix'e özgü `ulimit` komutu içermesinden kaynaklanır. Projeyi başlatmadan önce şu adımları uygulayın:
+
+1. VS Code'da `package.json` dosyasını açın.
+2. Aşağıdaki satırı bulun:
+   ```json
+   "dev": "ulimit -n 10000; ..."
+   ```
+3. Şununla değiştirip kaydedin:
+   ```json
+   "dev": "set WATCHPACK_POLLING=true && next dev --hostname 127.0.0.1"
+   ```
+
+> Bu değişikliğin `git reset --hard` gibi komutlarla üzerine yazılabileceğini unutmayın; her sıfırlamadan sonra tekrar uygulamanız gerekebilir.
+
+---
 
 ### 1. Depoyu kopyalama
 
@@ -95,7 +113,7 @@ Kaynak şablon: **[`.env.example`](./.env.example)**. Aşağıdaki liste, dosyad
 
 | Değişken | Açıklama |
 | -------- | -------- |
-| **`DATABASE_URL`** | Prisma’nın bağlandığı veritabanının bağlantı dizesi. Neon için örnek: `postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require`. Turso/libsql kullanımında `libsql://…` biçimi kullanılabilir (yerel SQLite/anlık senaryolar). |
+| **`DATABASE_URL`** | Prisma'nın bağlandığı veritabanının bağlantı dizesi. Neon için örnek: `postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require`. Turso/libsql kullanımında `libsql://…` biçimi kullanılabilir (yerel SQLite/anlık senaryolar). |
 | **`TURSO_AUTH_TOKEN`** | Turso kullanıldığında libsql istemcisinin kimlik doğrulama anahtarı. |
 | **`FOOTBALL_DATA_API_KEY`** | Football-Data.org API erişimi; maç beslemesi veya senkron scriptleri için. |
 | **`FOOTBALL_DATA_COMPETITIONS`** | (İsteğe bağlı) Çekilecek lig kodları; boş bırakılırsa projede varsayılan lig seti kullanılabilir. |
@@ -108,7 +126,7 @@ Ek olarak admin oturumu için `.env` içinde kullanılan özel kimlik bilgileri 
 
 1. **`prisma/schema.prisma`** tek doğruluk kaynağıdır; modeller (ör. `User`, `Match`, `Review`, `ReviewLike`) burada tanımlıdır.
 2. **`npx prisma db push`** geliştirme ortamında şemayı veritabanına uygular (migration geçmişi olmadan hızlı senkron).
-3. **`npx prisma generate`** Prisma Client’ı günceller; TypeScript ve çalışma zamanı sorguları bu çıktıya bağlıdır.
+3. **`npx prisma generate`** Prisma Client'ı günceller; TypeScript ve çalışma zamanı sorguları bu çıktıya bağlıdır.
 4. Örnek veri için **`npm run db:seed`** (yapılandırmaya bağlıdır); arşiv veya lig bazlı scriptler için `package.json` içindeki diğer `db:*` komutlarına bakın.
 
 Şema ile üretim veritabanını birleştirirken dikkat: `db push` bazı durumlarda veri kaybı uyarısı verebilir; üretimde yedek veya Neon branch snapshot önerilir.
@@ -119,7 +137,7 @@ Ek olarak admin oturumu için `.env` içinde kullanılan özel kimlik bilgileri 
 
 ### İstatistik ve puanlama notları
 
-- **NULLS LAST:** “En yüksek puanlı maçlar” gibi raporlarda ağırlıklı ortalama sıralamasında PostgreSQL **`DESC NULLS LAST`** kullanılır; böylece `weightedRating` değeri olmayan kayıtlar listenin sonunda kalır.
+- **NULLS LAST:** "En yüksek puanlı maçlar" gibi raporlarda ağırlıklı ortalama sıralamasında PostgreSQL **`DESC NULLS LAST`** kullanılır; böylece `weightedRating` değeri olmayan kayıtlar listenin sonunda kalır.
 - **Weighted rating:** Detaylı kategori puanları girildiğinde tek bir ağırlıklı skor hesaplanır ve istatistiklerde önceliklendirilir; aksi halde klasik `rating` değeri referans olarak kullanılabilir.
 
 ### Database Maintenance — NULL sütun tespiti
@@ -137,7 +155,7 @@ npm run db:drop-null-cols
 npm run db:drop-null-cols -- public Match
 ```
 
-Bu araç veritabanında doğrudan silme **yapmaz**; yalnızca önerilen SQL’i yazdırır. **`DROP COLUMN` geri alınamaz**; üretimde çalıştırmadan önce yedek veya Neon snapshot alınması önerilir.
+Bu araç veritabanında doğrudan silme **yapmaz**; yalnızca önerilen SQL'i yazdırır. **`DROP COLUMN` geri alınamaz**; üretimde çalıştırmadan önce yedek veya Neon snapshot alınması önerilir.
 
 ---
 
