@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Matchboxd: Sosyal Futbol Maç Bilgi Sistemi
 
-## Getting Started
+Futbol maçlarını listeleyebildiğiniz, analiz paylaşıp puanladığınız sosyal bir maç bilgi ve değerlendirme uygulaması.
 
-First, run the development server:
+## Kullanılan Teknolojiler
+
+| Katman       | Teknoloji                                      |
+| ------------ | ---------------------------------------------- |
+| Uygulama     | **Next.js**                                    |
+| ORM          | **Prisma**                                     |
+| Veritabanı   | **PostgreSQL** (**Neon** üzerinde barındırılabilir) |
+| Stil         | **Tailwind CSS**                               |
+
+## Kurulum Adımları
+
+### 1. Depoyu klonlayın
+
+```bash
+git clone <repository-url>
+cd matchboxd
+```
+
+### 2. Bağımlılıkları yükleyin
+
+```bash
+npm install
+```
+
+### 3. Ortam değişkenleri (.env.example → .env)
+
+```bash
+cp .env.example .env
+```
+
+`.env` içinde en azından veritabanınız için bir **`DATABASE_URL`** tanımlayın. Neon PostgreSQL örneği:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require"
+```
+
+(Gerekirse `NEXTAUTH_SECRET`, API anahtarları vb. diğer değişkenleri de `.env.example` dosyasındaki açıklamalara göre doldurun.)
+
+### 4. Şema oluşturma ve Prisma client
+
+```bash
+npx prisma db push
+npx prisma generate
+```
+
+### 5. Uygulamayı çalıştırma
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database Maintenance
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Gereksiz (NULL) sütunların tespiti ve Neon SQL Editöründe çalıştırmalık **`ALTER TABLE … DROP COLUMN`** komutları üretmek için:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run db:drop-null-cols -- <schema> <table>
+```
 
-## Learn More
+Varsayılan: `public` şeması ve `Match` tablosu (parametresiz çalıştırılabilir).
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run db:drop-null-cols
+npm run db:drop-null-cols -- public Match
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Açıklama:** Gereksiz (tamamen boş / NULL) sütunların temizlenmesi ve veritabanı şemasındaki gereksiz alanların kaldırılması bu araçla kolaylaştırılmıştır; çıktıdaki komutları yedek aldıktan sonra elle uygularsanız gereksiz indeks/işlem yükünden tasarruf sağlar. Üretilen `DROP COLUMN` komutları **geri alınamaz**; üretim veritabanında çalıştırmadan önce Neon branch snapshot veya yedek alın.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Özellikler (kısa notlar)
 
-## Deploy on Vercel
+- **Sıralama (NULLS LAST):** “En yüksek puanlı maçlar” gibi listelerde ağırlıklı ortalama (`weightedRating`) bazlı sıralama yapılırken PostgreSQL’de **`DESC NULLS LAST`** kullanılır; böylece ağırlıklı puanı olmayan (NULL) kayıtlar listenin sonuna itilir, yüksek puana sahip maçlar üstte kalır.
+- **Weighted rating:** Kullanıcılar detaylı kategori puanları girdiğinde (taktik, heyecan, tempo vb.) tek bir **ağırlıklı puan** hesaplanır ve istatistiklerde bu değer öncelikli kullanılır; kategori girilmediyse klasik `rating` değeri yedek olarak devreye girebilir.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Matchboxd — ders / proje teslimi için README şablonuna uygun hazırlanmıştır.*

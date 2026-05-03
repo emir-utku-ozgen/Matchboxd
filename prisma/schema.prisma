@@ -40,6 +40,7 @@ model Match {
   status          String?
   statsJson       String?
   isArchived      Boolean  @default(false)
+  likeCount       Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   reviews         Review[]

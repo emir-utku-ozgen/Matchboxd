@@ -12,6 +12,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, X, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import LikeButton from "@/components/LikeButton";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -31,6 +32,7 @@ type Match = {
   venue:        string;
   status:       string | null;
   statsJson:    string | null;
+  likeCount:    number;
 };
 
 type ApiResponse = {
@@ -175,6 +177,9 @@ function MatchCard({ m }: { m: Match }) {
 
       {/* Meta satırı */}
       <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-4 sm:mt-0 sm:border-t-0 sm:pt-0">
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <LikeButton matchId={m.id} initialLikeCount={m.likeCount ?? 0} compact />
+        </div>
         <span className="text-sm text-[var(--muted)]">{formatDate(m.matchDate)}</span>
         <span className="rounded-lg bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--muted)]">
           {m.competition}

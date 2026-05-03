@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import ReviewForm from "@/components/ReviewForm";
 import AddToCollectionButton from "@/components/AddToCollectionButton";
+import LikeButton from "@/components/LikeButton";
 import DeleteReviewButton from "./DeleteReviewButton";
 
 export const dynamic = "force-dynamic";
@@ -116,16 +117,19 @@ export default async function MatchDetailPage({ params }: Props) {
 
         {/* Maç skoru kartı */}
         <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--card-bg)] p-6 sm:p-8">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <span className="rounded-full bg-[var(--stadium-green-muted)] px-3 py-1 text-xs font-medium text-[var(--stadium-green)]">
               {match.competition}
             </span>
-            <time
-              dateTime={new Date(match.matchDate).toISOString()}
-              className="text-xs text-[var(--muted)]"
-            >
-              {formatMatchDateTime(match.matchDate)}
-            </time>
+            <div className="flex flex-wrap items-center gap-3">
+              <LikeButton matchId={match.id} initialLikeCount={match.likeCount} />
+              <time
+                dateTime={new Date(match.matchDate).toISOString()}
+                className="text-xs text-[var(--muted)]"
+              >
+                {formatMatchDateTime(match.matchDate)}
+              </time>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

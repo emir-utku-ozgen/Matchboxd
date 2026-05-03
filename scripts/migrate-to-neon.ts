@@ -129,6 +129,7 @@ async function main() {
         status:          m.status    ? String(m.status)    : null,
         statsJson:       m.statsJson ? String(m.statsJson) : null,
         isArchived:      Boolean(m.isArchived),
+        likeCount:       Number(m.likeCount ?? 0),
         createdAt:       toDate(m.createdAt),
         updatedAt:       toDate(m.updatedAt),
       })),
