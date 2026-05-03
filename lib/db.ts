@@ -26,6 +26,7 @@ function createPrisma(): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrisma();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+/** Tek Node sürecinde (Vercel Server Function dahil) tek PrismaClient örneği */
+export const prisma =
+  globalForPrisma.prisma ??
+  (globalForPrisma.prisma = createPrisma());
