@@ -42,17 +42,19 @@ Proje geliştirme ortamı macOS (Unix-based) baz alınarak yapılandırılmışt
 
 #### ⚠️ Önemli: Windows'ta `ulimit` Hatası
 
-`git reset --hard` sonrasında `npm run dev` komutunu çalıştırdığınızda **`ulimit` hatası** alabilirsiniz. Bu, `package.json` içindeki `dev` scriptinin Unix'e özgü `ulimit` komutu içermesinden kaynaklanır. Projeyi başlatmadan önce şu adımları uygulayın:
+`npm run dev` komutunu çalıştırdığınızda **`ulimit` hatası** alabilirsiniz. Bunun sebebi, `dev` komutunun Linux/Mac sistemlerine göre yazılmış olmasıdır; `ulimit` komutu Windows'ta çalışmaz. Projeyi başlatmadan önce şu adımları uygulayın:
 
-1. VS Code'da `package.json` dosyasını açın.
-2. Aşağıdaki satırı bulun:
+1. **VS Code** ile `Matchboxd` klasörünü açın.
+2. Sol taraftaki dosya listesinden `package.json` dosyasını bulun ve tıklayın.
+3. `"scripts"` bölümündeki `"dev"` satırını bulun. Muhtemelen şöyle görünüyor:
    ```json
-   "dev": "ulimit -n 10000; ..."
+   "dev": "ulimit -n 10000; WATCHPACK_POLLING=true next dev --hostname 127.0.0.1"
    ```
-3. Şununla değiştirip kaydedin:
+4. O satırı Windows ile uyumlu hale getirmek için şununla değiştirin:
    ```json
    "dev": "set WATCHPACK_POLLING=true && next dev --hostname 127.0.0.1"
    ```
+5. Dosyayı kaydedin (**Ctrl + S**).
 
 > Bu değişikliğin `git reset --hard` gibi komutlarla üzerine yazılabileceğini unutmayın; her sıfırlamadan sonra tekrar uygulamanız gerekebilir.
 
