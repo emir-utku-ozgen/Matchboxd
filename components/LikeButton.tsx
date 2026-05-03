@@ -33,13 +33,15 @@ export default function LikeButton({
   initialLikeCount,
   compact = false,
 }: LikeButtonProps) {
-  const [count, setCount] = useState(initialLikeCount);
+  const safeInitial = Number(initialLikeCount ?? 0);
+  const [count, setCount] = useState(Number.isFinite(safeInitial) ? safeInitial : 0);
   const [isLiked, setIsLiked] = useState(false);
   const [pending, setPending] = useState(false);
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
-    setCount(initialLikeCount);
+    const n = Number(initialLikeCount ?? 0);
+    setCount(Number.isFinite(n) ? n : 0);
   }, [initialLikeCount]);
 
   useEffect(() => {

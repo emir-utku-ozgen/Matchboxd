@@ -80,7 +80,10 @@ export async function GET(req: NextRequest) {
     ]);
 
     return NextResponse.json({
-      matches,
+      matches: matches.map((m) => ({
+        ...m,
+        likeCount: m.likeCount ?? 0,
+      })),
       total,
       page,
       limit,

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push",
+    "db:migrate-deploy": "prisma migrate deploy",
     "db:turso-sql": "prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script -o prisma/turso-schema.sql",
     "db:seed": "tsx prisma/seed.ts",
     "db:archive": "tsx prisma/archive.ts",

@@ -122,7 +122,7 @@ export default async function MatchDetailPage({ params }: Props) {
               {match.competition}
             </span>
             <div className="flex flex-wrap items-center gap-3">
-              <LikeButton matchId={match.id} initialLikeCount={match.likeCount} />
+              <LikeButton matchId={match.id} initialLikeCount={match.likeCount ?? 0} />
               <time
                 dateTime={new Date(match.matchDate).toISOString()}
                 className="text-xs text-[var(--muted)]"
