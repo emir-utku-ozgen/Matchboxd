@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import RatingStars from "@/components/RatingStars";
+import ReviewLikeButton from "@/components/ReviewLikeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +86,8 @@ export default async function Home() {
                       Maçın Adamı: {r.manOfTheMatch}
                     </p>
                   )}
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <ReviewLikeButton reviewId={r.id} initialLikeCount={r.likeCount ?? 0} compact />
                     <RatingStars rating={r.rating} size="sm" />
                     <span className="text-xs text-[var(--muted)]">
                       {r.user?.name ?? r.userName} bu maça {r.rating} puan verdi

@@ -34,8 +34,6 @@ export interface Match {
   venue: string;
   status?: string;
   stats?: MatchStats;
-  /** Maç kartı beğenileri (sunucuda varsayılan 0) */
-  likeCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

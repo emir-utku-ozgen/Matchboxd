@@ -6,8 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import ReviewForm from "@/components/ReviewForm";
 import AddToCollectionButton from "@/components/AddToCollectionButton";
-import LikeButton from "@/components/LikeButton";
 import DeleteReviewButton from "./DeleteReviewButton";
+import ReviewLikeButton from "@/components/ReviewLikeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -121,15 +121,12 @@ export default async function MatchDetailPage({ params }: Props) {
             <span className="rounded-full bg-[var(--stadium-green-muted)] px-3 py-1 text-xs font-medium text-[var(--stadium-green)]">
               {match.competition}
             </span>
-            <div className="flex flex-wrap items-center gap-3">
-              <LikeButton matchId={match.id} initialLikeCount={match.likeCount ?? 0} />
-              <time
-                dateTime={new Date(match.matchDate).toISOString()}
-                className="text-xs text-[var(--muted)]"
-              >
-                {formatMatchDateTime(match.matchDate)}
-              </time>
-            </div>
+            <time
+              dateTime={new Date(match.matchDate).toISOString()}
+              className="text-xs text-[var(--muted)]"
+            >
+              {formatMatchDateTime(match.matchDate)}
+            </time>
           </div>
 
           <div className="flex items-center gap-4">
@@ -289,9 +286,10 @@ export default async function MatchDetailPage({ params }: Props) {
                         )}
                       </div>
 
-                      {/* Puanlar + Sil butonu */}
+                      {/* Puanlar + Beğeni + Sil */}
                       <div className="flex shrink-0 flex-col items-end gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                          <ReviewLikeButton reviewId={r.id} initialLikeCount={r.likeCount ?? 0} compact />
                           {r.weightedRating != null && (
                             <span className="rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-400">
                               ⚖️ {r.weightedRating.toFixed(1)}

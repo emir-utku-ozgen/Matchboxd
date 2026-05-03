@@ -73,17 +73,13 @@ export async function GET(req: NextRequest) {
           venue:        true,
           status:       true,
           statsJson:    true,
-          likeCount:    true,
         },
       }),
       prisma.match.count({ where }),
     ]);
 
     return NextResponse.json({
-      matches: matches.map((m) => ({
-        ...m,
-        likeCount: m.likeCount ?? 0,
-      })),
+      matches,
       total,
       page,
       limit,

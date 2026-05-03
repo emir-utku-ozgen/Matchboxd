@@ -1,6 +1,3 @@
-// Matchboxd - Futbol Müsabakaları Değerlendirme Sistemi
-// PostgreSQL (Neon)
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,22 +7,22 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String       @id @default(cuid())
+  email        String       @unique
   name         String
   passwordHash String?
   avatarUrl    String?
   favoriteTeam String?
-  role         String   @default("user") // user | admin
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  reviews      Review[]
+  role         String       @default("user")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
   collections  Collection[]
+  reviews      Review[]
 }
 
 model Match {
-  id              String   @id @default(cuid())
-  externalId      String?  @unique
+  id              String            @id @default(cuid())
+  externalId      String?           @unique
   homeTeamName    String
   awayTeamName    String
   homeCrest       String?
@@ -39,12 +36,11 @@ model Match {
   venue           String
   status          String?
   statsJson       String?
-  isArchived      Boolean  @default(false)
-  likeCount       Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  reviews         Review[]
+  isArchived      Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   collectionItems CollectionMatch[]
+  reviews         Review[]
 
   @@index([competition])
   @@index([isArchived])
@@ -52,11 +48,9 @@ model Match {
 }
 
 model Review {
-  id                  String   @id @default(cuid())
+  id                  String       @id @default(cuid())
   matchId             String
-  match               Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
   userId              String?
-  user                User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   userName            String
   title               String?
   content             String
@@ -65,9 +59,12 @@ model Review {
   manOfTheMatch       String?
   categoryRatingsJson String?
   weightedRating      Float?
-  likeCount           Int      @default(0)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  likeCount           Int          @default(0)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  match               Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user                User?        @relation(fields: [userId], references: [id])
+  reviewLikes         ReviewLike[]
 
   @@index([matchId])
   @@index([createdAt])
@@ -75,29 +72,39 @@ model Review {
   @@index([weightedRating])
 }
 
+model ReviewLike {
+  id        String   @id @default(cuid())
+  reviewId  String
+  actorKey  String
+  createdAt DateTime @default(now())
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, actorKey])
+  @@index([reviewId])
+}
+
 model Collection {
   id          String            @id @default(cuid())
   userId      String
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
   description String?
   isPublic    Boolean           @default(true)
   type        String            @default("CUSTOM")
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   matches     CollectionMatch[]
 
   @@index([userId])
-  @@index([type])
 }
 
 model CollectionMatch {
   id           String     @id @default(cuid())
   collectionId String
-  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   matchId      String
-  match        Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
   addedAt      DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  match        Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   @@unique([collectionId, matchId])
   @@index([collectionId])

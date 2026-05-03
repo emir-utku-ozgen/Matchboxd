@@ -23,7 +23,6 @@ type Match = {
   awayScore: number;
   matchDate: string;
   competition: string;
-  likeCount?: number;
 };
 
 type Props = {

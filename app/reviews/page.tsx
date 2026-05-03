@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import TeamFilter from "./TeamFilter";
+import ReviewLikeButton from "@/components/ReviewLikeButton";
 import { MessageSquare } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -203,16 +204,17 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                     {/* Alt satır: motm + "Tümünü Oku" */}
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                      {r.manOfTheMatch ? (
-                        <p className="text-xs text-[var(--muted)]">
-                          🏅{" "}
-                          <span className="font-medium text-[var(--foreground)]">
-                            {r.manOfTheMatch}
-                          </span>
-                        </p>
-                      ) : (
-                        <span />
-                      )}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <ReviewLikeButton reviewId={r.id} initialLikeCount={r.likeCount ?? 0} compact />
+                        {r.manOfTheMatch ? (
+                          <p className="text-xs text-[var(--muted)]">
+                            🏅{" "}
+                            <span className="font-medium text-[var(--foreground)]">
+                              {r.manOfTheMatch}
+                            </span>
+                          </p>
+                        ) : null}
+                      </div>
 
                       <Link
                         href={`/matches/${r.match.id}`}

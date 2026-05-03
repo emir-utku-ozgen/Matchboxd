@@ -12,6 +12,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import DeleteMyReviewButton from "./DeleteMyReviewButton";
+import ReviewLikeButton from "@/components/ReviewLikeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -236,7 +237,8 @@ export default async function MyReviewsPage() {
                 </div>
 
                 {/* Butonlar */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <ReviewLikeButton reviewId={r.id} initialLikeCount={r.likeCount ?? 0} compact />
                   <Link
                     href={`/my-reviews/${r.id}/edit`}
                     className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--muted)] hover:border-[var(--stadium-green)]/50 hover:bg-[var(--stadium-green-muted)] hover:text-[var(--stadium-green)]"
